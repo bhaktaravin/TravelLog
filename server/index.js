@@ -1,26 +1,31 @@
 const express = require('express'); 
-const mongoose = require('mongoose');
-const app = express(); 
-require('dotenv').config({ path: "./config.env"}); 
-
 const cors = require('cors'); 
-app.use(cors()); 
+const mongoose = require("mongoose");
+require('dotenv').config({ path: "./config.env"}); 
+const userRoute = require("./routes/users");
 const pinRoute = require("./routes/pins");
+const app = express(); 
+const port = 5000; 
+
+app.use(cors()); 
 
 app.use(express.json()); 
 
-mongoose 
-.connect(process.env.ATLAS_URI, {
-    useNewUrlParser: true
-})
-.then(() => {
-    console.log("Connected..."); 
-})
-.catch((err) => console.log(err));
 
+// Connect to mongoose
+mongoose
+  .connect(process.env.ATLAS_URI)
+  .then(() => {
+    console.log("Connected to mongoDB!");
+  })
+  .catch((err) => {
+    console.log(err);
+  })
 
-app.use("/api/pins", pinRoute); 
+// Use routes
+app.use("/api/users", userRoute);
+app.use("/api/pins", pinRoute);
 
-app.listen(process.env.PORT, () => {
-    console.log(`Server is running ${process.env.PORT}`);
-})
+app.listen(8800, () => {
+  console.log("Backend server is running!");
+});
