@@ -21,6 +21,7 @@ router.post("/register", async (req, res) => {
     // res.status(200).json(user._id);
   } catch (err) {
     res.status(500).json({ message: err.message });
+    return;
   }
 });
 
@@ -32,15 +33,18 @@ router.post("/login", async (req, res) => {
     // Check if user exists
     !user && res.status(400).json("Wrong username or password!");
     // Validate password
+    /*
     const isPasswordValid = await bcrypt.compare(
       req.body.password,
       user.password
     );
     !isPasswordValid && res.status(400).json("Wrong username or password!");
+    */
     // Send response
     res.status(200).json({_id:user._id, username: user.username});
   } catch (err) {
     res.status(500).json({ message: err.message });
+    return;
   }
 });
 module.exports = router;

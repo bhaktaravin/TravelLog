@@ -1,7 +1,7 @@
-import {useRef,  useState, useEffect } from "react";
+import {useState, useEffect } from "react";
 import ReactMapGL, { Marker, Popup } from "react-map-gl";
 import RoomIcon from '@mui/icons-material/Room';
-import StarIcon from '@mui/icons-material/Star'
+import StarIcon from '@mui/icons-material/Star';
 import "./App.css";
 import axios from "axios";
 import mapboxgl from "mapbox-gl";
@@ -35,7 +35,8 @@ function App() {
   useEffect(() => {
     const getPins = async () => {
       try {
-        const res = await axios.get("/pins");
+        const res = await axios.get("http://localhost:8800/api/pins");
+        console.log(res.data); 
         setPins(res.data);
       } catch (err) {
         console.log(err);
@@ -48,13 +49,13 @@ function App() {
     setCurrentPlaceId(id);
     setViewport({ ...viewport, latitude: lat, longitude: long });
   };
+  console.log({ newPlace });
 
   const handleAddClick = (e) => {
-    const [long, lat] = e.lngLat;
-    setNewPlace({
-      lat,
-      long,
-    });
+    console.log(e);
+    console.log(e.lngLat.lng);
+    console.log(e.lngLat.lat);
+    setNewPlace({ lat: e.lngLat.lat, long: e.lngLat.lng });
   };
 
   const handleSubmit = async (e) => {
@@ -68,7 +69,7 @@ function App() {
       long: newPlace.long,
     };
     try {
-      const res = await axios.post("/pins", newPin);
+      const res = await axios.post("http://localhost:8800/api/pins/", newPin);
       setPins([...pins, res.data]);
       setNewPlace(null);
     } catch (err) {
@@ -81,17 +82,27 @@ function App() {
     setCurrentUser(null);
   };
 
+  const searchBar = ()=> {
+    const newUrl = 'https://api.mapbox.com/geocoding/v5/mapbox.places/';
+  }
   return (
     <div className="App">
+      <br />
+       <input type="text" className="form-control input-lg" 
+       id="address" 
+       placeholder="San Francisco, California, United States" />
       <ReactMapGL
         {...viewport}
         mapboxApiAccessToken={mapboxgl.accessToken}
-        onViewportChange={(nextViewport) => setViewport(nextViewport)}
-        mapStyle="mapbox://styles/mapbox/streets-v11"
+        onMove={(evt) => setViewport(evt.viewState)}
+        style={{ width: "100vw", height: "100vh" }}
+        mapStyle="mapbox://styles/bhaktaravin/cl7h3s6v5000714o1jj8nxt3r"
         onDblClick={handleAddClick}
-        // transitionDuration="200"
+        transitionDuration="200"
       >
-        {pins.map((p) => (
+      
+       
+      {pins.map((p) => (
           <>
             <Marker
               latitude={p.lat}
@@ -110,7 +121,6 @@ function App() {
             </Marker>
             {p._id === currentPlaceId && (
               <Popup
-                key={p._id}
                 latitude={p.lat}
                 longitude={p.long}
                 closeButton={true}
@@ -119,8 +129,8 @@ function App() {
                 onClose={() => setCurrentPlaceId(null)}
               >
                 <div className="card">
-                  <label className="place">Place</label>
-                  <h4>{p.title}</h4>
+                  <label>Place</label>
+                  <h4 className="place">{p.title}</h4>
                   <label>Review</label>
                   <p className="desc">{p.desc}</p>
                   <label>Rating</label>
@@ -131,8 +141,9 @@ function App() {
                   <span className="username">
                     Created by <b>{p.username}</b>
                   </span>
-                  <span className="date">{p.createdAt}</span>
+                  <span className="date">{format(p.createdAt)}</span>
                 </div>
+                
               </Popup>
             )}
           </>
@@ -155,7 +166,7 @@ function App() {
                 />
                 <label>Review</label>
                 <textarea
-                  placeholder="Say something about this place"
+                  placeholder="Say us something about this place."
                   onChange={(e) => setDesc(e.target.value)}
                 />
                 <label>Rating</label>
@@ -174,9 +185,7 @@ function App() {
           </Popup>
         )}
         {currentUser ? (
-          <button className="button logout" onClick={handleLogout}>
-            Logout
-          </button>
+          <button className="button logout" onClick={handleLogout}>Logout</button>
         ) : (
           <div className="buttons">
             <button className="button login" onClick={() => setShowLogin(true)}>
@@ -190,14 +199,8 @@ function App() {
             </button>
           </div>
         )}
-        {showRegister && <Register setShowRegister={setShowRegister} />}
-        {showLogin && (
-          <Login
-            setShowLogin={setShowLogin}
-            myStorage={myStorage}
-            setCurrentUser={setCurrentUser}
-          />
-        )}
+        {showRegister && <Register setShowRegister={setShowRegister}/>}
+        {showLogin && <Login setShowLogin={setShowLogin} myStorage={myStorage} setCurrentUser={setCurrentUser}/>}
       </ReactMapGL>
     </div>
   );
